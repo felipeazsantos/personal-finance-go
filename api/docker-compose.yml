@@ -1,0 +1,16 @@
+version: '3.3'
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres_pf
+    environment:
+      POSTGRES_USER: felipe
+      POSTGRES_PASSWORD: 123
+      POSTGRES_DB: personal_finance
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+
+volumes:
+  postgres_data:
