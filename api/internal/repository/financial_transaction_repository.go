@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/felipeazsantos/personal-finance-go/internal/models"
@@ -56,4 +57,73 @@ func (p *Postgres) GetFinancialTransactionByID(id uint64) (*models.FinancialTran
 	}
 
 	return ft, nil
+}
+
+// GetAllFinancialTransaction returns the financial transactions paginated
+func (p *Postgres) GetAllFinancialTransaction(limit, page uint64) (result []models.FinancialTransaction, err error) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	offset := (page - 1) * limit
+
+	query := fmt.Sprintf(`select id, type, amount, category_id, created_at, updated_at
+				from financial_transaction
+				limit %d, %d`, limit, offset)
+
+	rows, err := p.db.QueryContext(ctx, query)
+	for rows.Next() {
+		var ft models.FinancialTransaction
+		err = rows.Scan(
+			&ft.ID,
+			&ft.Type,
+			&ft.Amount,
+			&ft.CategoryID,
+			&ft.CreatedAt,
+			&ft.UpdatedAt,
+		)
+
+		if err != nil {
+			return
+		}
+
+		result = append(result, ft)
+	}
+
+	return
+}
+
+// DeleteFinancialTransactionByID delete a financial transaction by id
+func (p *Postgres) DeleteFinancialTransactionByID(id uint64) error {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	_, err := p.db.ExecContext(ctx, `delete from financial_transaction where id = ?`, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// UpdateFinancialTransaction update a financial transaction
+func (p *Postgres) UpdateFinancialTransaction(ftUpdated *models.FinancialTransaction) error {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	query := `update financial_transaction set 
+				type = ?, amount = ?, category_id = ?, last_updated = now()
+			  where id = ?`
+
+	_, err := p.db.ExecContext(ctx, query,
+		ftUpdated.Type,
+		ftUpdated.Amount,
+		ftUpdated.CategoryID,
+		ftUpdated.ID,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

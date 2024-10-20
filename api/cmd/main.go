@@ -7,6 +7,8 @@ import (
 
 	"github.com/felipeazsantos/personal-finance-go/config"
 	"github.com/felipeazsantos/personal-finance-go/internal/database"
+	"github.com/felipeazsantos/personal-finance-go/internal/repository"
+	"github.com/felipeazsantos/personal-finance-go/internal/service"
 )
 
 /*
@@ -30,6 +32,8 @@ const (
 
 func main() {
 	db := database.New(config.New())
+	repo := repository.New(db)
+	service.New(repo)
 
 	srv := &http.Server{
 		Addr: serverPort,
