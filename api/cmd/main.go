@@ -35,10 +35,11 @@ func main() {
 	repo := repository.New(db)
 	svce := service.New(repo)
 	router := router.New(serverHost + serverPort)
+	router.SetupHandlers(svce)
 
 	log.Printf("server is listening on http:%s%s ...\n", serverHost, serverPort)
 
-	if err := router.StartServer(svce); err != nil {
+	if err := router.StartServer(); err != nil {
 		log.Fatalf("error on start server: %v", err)
 	}
 }
