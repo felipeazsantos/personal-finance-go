@@ -1,13 +1,12 @@
 package main
 
 import (
-	"fmt"
 	"log"
-	"net/http"
 
 	"github.com/felipeazsantos/personal-finance-go/config"
 	"github.com/felipeazsantos/personal-finance-go/internal/database"
 	"github.com/felipeazsantos/personal-finance-go/internal/repository"
+	"github.com/felipeazsantos/personal-finance-go/internal/router"
 	"github.com/felipeazsantos/personal-finance-go/internal/service"
 )
 
@@ -31,17 +30,15 @@ const (
 )
 
 func main() {
-	db := database.New(config.New())
+	appConfig := config.New()
+	db := database.New(appConfig)
 	repo := repository.New(db)
-	service.New(repo)
-
-	srv := &http.Server{
-		Addr: serverPort,
-	}
+	svce := service.New(repo)
+	router := router.New(serverHost + serverPort)
 
 	log.Printf("server is listening on http:%s%s ...\n", serverHost, serverPort)
 
-	if err := srv.ListenAndServe(); err != nil {
+	if err := router.StartServer(svce); err != nil {
 		log.Fatalf("error on start server: %v", err)
 	}
 }
