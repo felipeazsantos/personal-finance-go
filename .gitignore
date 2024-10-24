@@ -1,1 +1,3 @@
 api/postgres_data
+api/.env
+.vscode
